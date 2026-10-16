@@ -94,10 +94,11 @@ jobs:
               implementation "androidx.compose.ui:ui-graphics"
               implementation "androidx.compose.ui:ui-tooling-preview"
               implementation "androidx.compose.material3:material3"
+              implementation "com.google.android.material:material:1.12.0"
           }
           EOF
 
-      - name: Generate App Resources & Manifest
+      - name: Generate App Resources, Styles & Manifest
         run: |
           set -euo pipefail
 
@@ -105,6 +106,16 @@ jobs:
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
               <string name="app_name">Sameer Ansari Calculator</string>
+          </resources>
+          EOF
+
+          cat > app/src/main/res/values/styles.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <style name="Theme.SameerCalculator" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+                  <item name="colorPrimary">#38BDF8</item>
+                  <item name="colorSecondary">#F59E0B</item>
+              </style>
           </resources>
           EOF
 
@@ -129,7 +140,7 @@ jobs:
                   android:roundIcon="@drawable/ic_launcher"
                   android:label="@string/app_name"
                   android:supportsRtl="true"
-                  android:theme="@style/Theme.Material3.DayNight.NoActionBar">
+                  android:theme="@style/Theme.SameerCalculator">
                   <activity
                       android:name=".MainActivity"
                       android:exported="true"
@@ -143,7 +154,7 @@ jobs:
           </manifest>
           EOF
 
-      - name: Write MainActivity.kt (Citizen Style Commercial & Weight Calculator)
+      - name: Write MainActivity.kt (Citizen Commercial & Weight Calculator)
         run: |
           cat > app/src/main/java/com/sameeransari/retailcalculator/MainActivity.kt <<'EOF'
           package com.sameeransari.retailcalculator
@@ -196,16 +207,14 @@ jobs:
           fun CitizenCalculatorScreen() {
               var displayValue by remember { mutableStateOf("0") }
               var subInfoText by remember { mutableStateOf("Sameer Ansari App") }
-              var currentMode by remember { mutableStateOf("calc") } // "calc" or "weight"
+              var currentMode by remember { mutableStateOf("calc") }
 
-              // Calculator States
               var firstOperand by remember { mutableStateOf<Double?>(null) }
               var pendingOperator by remember { mutableStateOf<String?>(null) }
               var waitingForOperand by remember { mutableStateOf(false) }
               var memoryGrandTotal by remember { mutableStateOf(0.0) }
               var memoryValue by remember { mutableStateOf(0.0) }
 
-              // Weight / Rate Calculator Inputs
               var rateInput by remember { mutableStateOf("") }
               var weightInput by remember { mutableStateOf("") }
 
@@ -243,7 +252,6 @@ jobs:
                       .padding(8.dp),
                   verticalArrangement = Arrangement.SpaceBetween
               ) {
-                  // Top Brand Banner Header
                   Card(
                       shape = RoundedCornerShape(12.dp),
                       colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1B4B)),
@@ -267,7 +275,6 @@ jobs:
                       }
                   }
 
-                  // Mode Switcher Buttons (Calc vs Weight)
                   Row(
                       modifier = Modifier
                           .fillMaxWidth()
@@ -295,7 +302,6 @@ jobs:
                       }
                   }
 
-                  // Citizen Style Green Screen Display
                   Card(
                       shape = RoundedCornerShape(14.dp),
                       colors = CardDefaults.cardColors(containerColor = Color(0xFF1B4D3E)),
@@ -324,7 +330,6 @@ jobs:
                       }
                   }
 
-                  // Main Content: Either Weight Mode Inputs or Citizen Keypad
                   if (currentMode == "weight") {
                       Column(
                           modifier = Modifier
@@ -366,12 +371,10 @@ jobs:
                           }
                       }
                   } else {
-                      // Citizen Calculator Keypad Grid (Exact layout from image)
                       Column(
                           verticalArrangement = Arrangement.spacedBy(5.dp),
                           modifier = Modifier.fillMaxWidth()
                       ) {
-                          // Row 1: ON/AC, %, ÷
                           Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                               CalcBtn("ON/AC", Modifier.weight(1f), Color(0xFF0D9488)) { displayValue = "0"; firstOperand = null; pendingOperator = null; subInfoText = "Cleared" }
                               CalcBtn("CHECK", Modifier.weight(1f), Color(0xFF0284C7)) { subInfoText = "Check Log Active" }
@@ -380,7 +383,6 @@ jobs:
                               }
                               CalcBtn("÷", Modifier.weight(1f), Color(0xFF475569)) { performOperation("÷") }
                           }
-                          // Row 2: GT, MU, %, ×
                           Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                               CalcBtn("GT", Modifier.weight(1f), Color(0xFF334155)) { displayValue = memoryGrandTotal.toString(); subInfoText = "Grand Total" }
                               CalcBtn("MU", Modifier.weight(1f), Color(0xFF334155)) { 
@@ -394,21 +396,18 @@ jobs:
                               }
                               CalcBtn("×", Modifier.weight(1f), Color(0xFF475569)) { performOperation("×") }
                           }
-                          // Row 3: 7, 8, 9, -
                           Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                               CalcBtn("7", Modifier.weight(1f), Color(0xFF334155)) { appendDigit("7") }
                               CalcBtn("8", Modifier.weight(1f), Color(0xFF334155)) { appendDigit("8") }
                               CalcBtn("9", Modifier.weight(1f), Color(0xFF334155)) { appendDigit("9") }
                               CalcBtn("-", Modifier.weight(1f), Color(0xFF475569)) { performOperation("-") }
                           }
-                          // Row 4: 4, 5, 6, +
                           Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                               CalcBtn("4", Modifier.weight(1f), Color(0xFF334155)) { appendDigit("4") }
                               CalcBtn("5", Modifier.weight(1f), Color(0xFF334155)) { appendDigit("5") }
                               CalcBtn("6", Modifier.weight(1f), Color(0xFF334155)) { appendDigit("6") }
                               CalcBtn("+", Modifier.weight(1f), Color(0xFF475569)) { performOperation("+") }
                           }
-                          // Row 5: 1, 2, 3, =
                           Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                               CalcBtn("1", Modifier.weight(1f), Color(0xFF334155)) { appendDigit("1") }
                               CalcBtn("2", Modifier.weight(1f), Color(0xFF334155)) { appendDigit("2") }
@@ -420,7 +419,6 @@ jobs:
                                   subInfoText = "Saved to GT"
                               }
                           }
-                          // Row 6: 0, 00, ., √, M+, M-
                           Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                               CalcBtn("0", Modifier.weight(1f), Color(0xFF334155)) { appendDigit("0") }
                               CalcBtn("00", Modifier.weight(1f), Color(0xFF334155)) { appendDigit("00") }
@@ -441,7 +439,6 @@ jobs:
                       }
                   }
 
-                  // Footer Ribbon
                   Card(
                       shape = RoundedCornerShape(10.dp),
                       colors = CardDefaults.cardColors(containerColor = Color(0xFF312E81)),
